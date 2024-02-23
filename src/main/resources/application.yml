@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/payment
+    #    url: jdbc:postgresql://192.168.176.202:5433/payment
+    username: postgres
+    #    password: uinpwd
+    password: password
+  application:
+    name: payment-service
+#  jpa:
+#    show-sql: true
+#    hibernate:
+#      ddl-auto: create
+server:
+  port: 8092
+  servlet:
+    context-path: /api/v1
+  forward-headers-strategy: FRAMEWORK
+  error:
+    include-message: always
+    include-stacktrace: never
+jwt:
+  key: ${JWT_KEY}
+  access-token-expiration: 3600000
+  refresh-token-expiration: 86400000
+  issuer: https://payment-test.ar-raniry.ac.id
