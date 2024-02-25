@@ -19,7 +19,6 @@ import org.springframework.web.servlet.HandlerExceptionResolver
 class JwtAuthenticationFilter(
     private val userDetailsService: CustomUserDetailsService,
     private val tokenService: TokenService,
-//    private val handlerExceptionResolver: HandlerExceptionResolver
 ) : OncePerRequestFilter() {
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -36,7 +35,7 @@ class JwtAuthenticationFilter(
         try {
             username = tokenService.extractUsername(jwtToken)
         } catch (e: Exception) {
-            response.sendError(401, "You are unauthorized")
+            response.sendError(403, "Access Denied")
             return
         }
         if (username != null && SecurityContextHolder.getContext().authentication == null) {

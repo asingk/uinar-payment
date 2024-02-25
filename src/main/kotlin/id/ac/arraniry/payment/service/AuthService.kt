@@ -42,7 +42,7 @@ class AuthService(
         try {
             extractedUsername = tokenService.extractUsername(refreshToken)
         } catch (e: Exception) {
-            throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "You are unauthorized")
+            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied")
         }
         return extractedUsername?.let { username ->
             val currentUserDetails = userDetailsService.loadUserByUsername(username)

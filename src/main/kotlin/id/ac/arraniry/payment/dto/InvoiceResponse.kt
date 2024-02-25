@@ -15,4 +15,5 @@ data class InvoiceResponse(
     val customerName: String,
     val paymentStatusCode: Int,
     val paymentStatusDesc: String,
+    val isAvailable: Boolean,
 )

@@ -7,6 +7,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import java.math.BigInteger
 import java.time.LocalDateTime
+import java.util.Date
 import java.util.UUID
 
 @Entity
@@ -27,7 +28,7 @@ data class Payment(
     val bankTransactionId: String? = null,
     val bankTerminal: String? = null,
     @Column(name = "bank_trx_date")
-    val bankTransactionDate: LocalDateTime? = null,
+    val bankTransactionDate: Date? = null,
     @ManyToOne
     @JoinColumn(name = "created_by")
     val createdBy: Consumer,

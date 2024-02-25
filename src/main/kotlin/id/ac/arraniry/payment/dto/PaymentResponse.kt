@@ -2,6 +2,7 @@ package id.ac.arraniry.payment.dto
 
 import java.math.BigInteger
 import java.time.LocalDateTime
+import java.util.Date
 import java.util.UUID
 
 data class PaymentResponse(
@@ -14,7 +15,7 @@ data class PaymentResponse(
     val channelName: String?,
     val bankTransactionId: String?,
     val bankTerminal: String?,
-    val bankTransactionDate: LocalDateTime?,
+    val bankTransactionDate: Date?,
     val errorCode: Int?,
     val errorDesc: String?,
 )

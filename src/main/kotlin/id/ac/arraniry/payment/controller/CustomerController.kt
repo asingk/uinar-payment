@@ -242,7 +242,8 @@ class CustomerController(
                 itemId = it.item.id,
                 itemName = it.item.name,
                 paymentStatusCode = it.paymentStatus.code,
-                paymentStatusDesc = it.paymentStatus.description
+                paymentStatusDesc = it.paymentStatus.description,
+                isAvailable = !disabled && LocalDateTime.now().isBefore(it.expiredDate) && it.paymentStatus.code == GlobalConstants.PAYMENT_STATUS_BELUM_BAYAR
             )
         }
 

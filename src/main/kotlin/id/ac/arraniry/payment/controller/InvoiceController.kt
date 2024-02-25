@@ -55,6 +55,7 @@ class InvoiceController(
             customerName = this.customer.name,
             paymentStatusCode = this.paymentStatus.code,
             paymentStatusDesc = this.paymentStatus.description,
+            isAvailable = !disabled && LocalDateTime.now().isBefore(this.expiredDate) && this.paymentStatus.code == GlobalConstants.PAYMENT_STATUS_BELUM_BAYAR
         )
 
     private fun Invoice.toPaymentResponseList(): List<PaymentResponse> =
