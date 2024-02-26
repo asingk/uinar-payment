@@ -11,5 +11,5 @@ data class PaymentRequest(
     val channelId: UUID? = null,
     val bankTransactionId: String? = null,
     val bankTerminal: String? = null,
-    val bankTransactionDate: Date? = null,
+    val bankTransactionDate: LocalDateTime? = null,
 )

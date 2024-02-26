@@ -13,4 +13,5 @@ class CustomerService(
     fun save(customer: Customer): Customer = customerRepo.save(customer)
     fun delete(id: String) = customerRepo.deleteById(id)
     fun findByIdAndDisabled(id: String, disabled: Boolean): Customer? = customerRepo.findByIdAndDisabled(id, disabled)
+    fun saveAll(customer: List<Customer>): MutableIterable<Customer> = customerRepo.saveAll(customer)
 }

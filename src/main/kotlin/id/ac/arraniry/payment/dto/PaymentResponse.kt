@@ -15,7 +15,7 @@ data class PaymentResponse(
     val channelName: String?,
     val bankTransactionId: String?,
     val bankTerminal: String?,
-    val bankTransactionDate: Date?,
+    val bankTransactionDate: LocalDateTime?,
     val errorCode: Int?,
     val errorDesc: String?,
 )

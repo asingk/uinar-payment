@@ -4,18 +4,17 @@ import id.ac.arraniry.payment.GlobalConstants
 import id.ac.arraniry.payment.dto.*
 import id.ac.arraniry.payment.entity.*
 import id.ac.arraniry.payment.service.*
-import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
+import java.math.BigInteger
 import java.security.Principal
 import java.time.LocalDateTime
 import java.util.*
@@ -24,7 +23,10 @@ import java.util.*
 @RequestMapping("/invoices")
 class InvoiceController(
     private val invoiceService: InvoiceService,
-) {
+    private val consumerService: ConsumerService,
+    private val customerService: CustomerService,
+    private val itemService: ItemService,
+): BaseController() {
 
     @GetMapping("/{id}")
     fun getById(@PathVariable id: String): InvoiceResponse =
@@ -42,6 +44,23 @@ class InvoiceController(
     @GetMapping("/{id}/payments")
     fun getPayments(@PathVariable id: String): List<PaymentResponse> =
         invoiceService.findById(id)?.toPaymentResponseList() ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "invoice does not found")
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/bulk")
+    fun createInvoicesBulk(@RequestBody invoiceBulkRequest: List<InvoiceBulkRequest>, principal: Principal): List<InvoiceResponse> {
+        val consumer = consumerService.findByUsernameAndDisabled(principal.name, false)
+            ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "access denied")
+        val reqList: MutableList<Invoice> = mutableListOf()
+        for (req in invoiceBulkRequest) {
+            val customer = customerService.findByIdAndDisabled(req.customerId, false)
+            val item = itemService.findByIdAndDisabled(req.itemId, false)
+            if (null != customer && null != item && req.amount >= BigInteger.ZERO && req.expirationDate.isAfter(LocalDateTime.now())) {
+                reqList.add(req.toModel(consumer, customer, item))
+            }
+        }
+
+        return invoiceService.saveAll(reqList).map { it.toResponse() }
+    }
 
     private fun Invoice.toResponse(): InvoiceResponse =
         InvoiceResponse(
@@ -75,5 +94,19 @@ class InvoiceController(
                 errorDesc = it.errorCode?.description,
             )
         }
+
+    private fun InvoiceBulkRequest.toModel(consumer: Consumer, customer: Customer, item: Item): Invoice =
+        Invoice(
+            id = generateRandomInvoice(customer),
+            disabled = false,
+            amount = this.amount,
+            expiredDate = this.expirationDate,
+            item = item,
+            customer = customer,
+            createdBy = consumer,
+            createdDate = LocalDateTime.now(),
+            paymentStatus = if (this.amount == BigInteger.ZERO) PaymentStatus(GlobalConstants.PAYMENT_STATUS_SUDAH_BAYAR)
+                                else PaymentStatus(GlobalConstants.PAYMENT_STATUS_BELUM_BAYAR)
+        )
 
 }

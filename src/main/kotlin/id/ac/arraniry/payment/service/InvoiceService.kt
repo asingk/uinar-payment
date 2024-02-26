@@ -13,4 +13,5 @@ class InvoiceService(
     fun save(invoice: Invoice): Invoice = invoiceRepo.save(invoice)
     fun delete(id: String) = invoiceRepo.deleteById(id)
     fun findByIdAndDisabled(id: String, disabled: Boolean): Invoice? = invoiceRepo.findByIdAndDisabled(id, disabled)
+    fun saveAll(invoices: MutableList<Invoice>): MutableIterable<Invoice> = invoiceRepo.saveAll(invoices)
 }

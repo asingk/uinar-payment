@@ -28,7 +28,7 @@ data class Payment(
     val bankTransactionId: String? = null,
     val bankTerminal: String? = null,
     @Column(name = "bank_trx_date")
-    val bankTransactionDate: Date? = null,
+    val bankTransactionDate: LocalDateTime? = null,
     @ManyToOne
     @JoinColumn(name = "created_by")
     val createdBy: Consumer,

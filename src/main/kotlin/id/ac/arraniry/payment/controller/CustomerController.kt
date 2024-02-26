@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
+import java.math.BigInteger
 import java.security.Principal
 import java.time.LocalDateTime
 import java.util.*
@@ -30,7 +31,7 @@ class CustomerController(
     private val invoiceService: InvoiceService,
     private val channelService: ChannelService,
     private val paymentService: PaymentService,
-) {
+): BaseController() {
 
     @GetMapping("/{id}")
     fun getById(@PathVariable id: String): CustomerResponse =
@@ -72,7 +73,7 @@ class CustomerController(
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/{id}/invoices")
-    fun create(@PathVariable id: String, @Valid @RequestBody invoiceCreateRequest: InvoiceCreateRequest, principal: Principal): CreateStringResponse {
+    fun createInvoice(@PathVariable id: String, @Valid @RequestBody invoiceCreateRequest: InvoiceCreateRequest, principal: Principal): CreateStringResponse {
         val consumer = consumerService.findByUsernameAndDisabled(principal.name, false)
             ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "access denied")
         val customer = customerService.findByIdAndDisabled(id, false)
@@ -113,7 +114,7 @@ class CustomerController(
             throw ResponseStatusException(HttpStatus.FORBIDDEN, "access denied")
         if (invoice.amount != request.amount)
             throw ResponseStatusException(HttpStatus.FORBIDDEN, "access denied")
-        if (!LocalDateTime.now().isBefore(invoice.expiredDate))
+        if (LocalDateTime.now().isAfter(invoice.expiredDate))
             throw ResponseStatusException(HttpStatus.FORBIDDEN, "access denied")
         var channel: Channel? = null
         if(request.channelId != null)
@@ -141,6 +142,21 @@ class CustomerController(
         invoice.lastModifiedBy = consumer
         invoice.lastModifiedDate = LocalDateTime.now()
         return CreateUUIDResponse(paymentService.save(request.toModel(invoice)).id)
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping("/bulk")
+    fun bulkCreate(principal: Principal, @RequestBody request: List<CustCreateRequest>) {
+        val consumer = consumerService.findByUsernameAndDisabled(principal.name, false)
+            ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "access denied")
+        val filterList: MutableList<Customer> = mutableListOf()
+        for (req in request) {
+            val cat = customerCatService.findByIdAndDisabled(req.categoryId, false)
+            if (null != cat && !(req.categoryId == GlobalConstants.MAHASISWA_CAT_ID && req.id.length > 9)) {
+                filterList.add(req.toModel(consumer, cat))
+            }
+        }
+        customerService.saveAll(filterList)
     }
 
     private fun Customer.toResponse(): CustomerResponse =
@@ -192,7 +208,8 @@ class CustomerController(
             customer = customer,
             createdBy = consumer,
             createdDate = LocalDateTime.now(),
-            paymentStatus = PaymentStatus(GlobalConstants.PAYMENT_STATUS_BELUM_BAYAR)
+            paymentStatus = if (this.amount == BigInteger.ZERO) PaymentStatus(GlobalConstants.PAYMENT_STATUS_SUDAH_BAYAR)
+                                else PaymentStatus(GlobalConstants.PAYMENT_STATUS_BELUM_BAYAR)
         )
 
     private fun InvoiceUpdateRequest.toModel(consumer: Consumer, customer: Customer, item: Item, invoice: Invoice): Invoice {
@@ -247,39 +264,38 @@ class CustomerController(
             )
         }
 
-    private fun generateRandomInvoice(customer: Customer): String {
-        val leftLimit = 48 // numeral '0'
-        val rightLimit = 57 // numeral '9'
-        val random = Random()
-        if (customer.category.id == GlobalConstants.MAHASISWA_CAT_ID) {
-            val rand = random.ints(leftLimit, rightLimit + 1)
-                .filter { i: Int -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97) }
-                .limit(3)
-                .collect(
-                    { StringBuilder() },
-                    { obj: StringBuilder, codePoint: Int -> obj.appendCodePoint(codePoint) }
-                ) { obj: StringBuilder, s: StringBuilder? ->
-                    obj.append(
-                        s
-                    )
-                }
-                .toString()
-            return customer.id + rand
-        } else {
-            return random.ints(leftLimit, rightLimit + 1)
-                .filter { i: Int -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97) }
-                .limit(12)
-                .collect(
-                    { StringBuilder() },
-                    { obj: StringBuilder, codePoint: Int -> obj.appendCodePoint(codePoint) }
-                ) { obj: StringBuilder, s: StringBuilder? ->
-                    obj.append(
-                        s
-                    )
-                }
-                .toString()
-        }
-
-    }
+//    fun generateRandomInvoice(customer: Customer): String {
+//        val leftLimit = 48 // numeral '0'
+//        val rightLimit = 57 // numeral '9'
+//        val random = Random()
+//        if (customer.category.id == GlobalConstants.MAHASISWA_CAT_ID) {
+//            val rand = random.ints(leftLimit, rightLimit + 1)
+//                .filter { i: Int -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97) }
+//                .limit(3)
+//                .collect(
+//                    { StringBuilder() },
+//                    { obj: StringBuilder, codePoint: Int -> obj.appendCodePoint(codePoint) }
+//                ) { obj: StringBuilder, s: StringBuilder? ->
+//                    obj.append(
+//                        s
+//                    )
+//                }
+//                .toString()
+//            return customer.id + rand
+//        } else {
+//            return random.ints(leftLimit, rightLimit + 1)
+//                .filter { i: Int -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97) }
+//                .limit(12)
+//                .collect(
+//                    { StringBuilder() },
+//                    { obj: StringBuilder, codePoint: Int -> obj.appendCodePoint(codePoint) }
+//                ) { obj: StringBuilder, s: StringBuilder? ->
+//                    obj.append(
+//                        s
+//                    )
+//                }
+//                .toString()
+//        }
+//    }
 
 }
