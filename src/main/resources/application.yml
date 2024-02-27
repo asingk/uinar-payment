@@ -1,13 +1,17 @@
 spring:
   datasource:
-#    url: jdbc:postgresql://localhost:5433/payment
-    url: jdbc:postgresql://db.test.uinar.ac.id:5433/payment
+    url: jdbc:postgresql://localhost:5433/payment
+#    url: jdbc:postgresql://db.test.uinar.ac.id:5433/payment
     username: postgres
-    password: uinpwd
-#    password: password
+#    password: uinpwd
+    password: password
   application:
     name: payment-service
-#  jpa:
+  jpa:
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: never
 #    show-sql: true
 #    hibernate:
 #      ddl-auto: create
@@ -20,7 +24,7 @@ server:
     include-message: always
     include-stacktrace: never
 jwt:
-  key: ${JWT_KEY}
+  key: { JWT_KEY }
   access-token-expiration: 3600000
   refresh-token-expiration: 86400000
   issuer: https://payment-test.ar-raniry.ac.id

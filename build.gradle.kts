@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "id.ac.ar-raniry"
-version = "0.0.1-SNAPSHOT"
+version = "0.3.0-SNAPSHOT"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
