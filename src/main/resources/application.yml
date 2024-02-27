@@ -1,10 +1,10 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/payment
-    #    url: jdbc:postgresql://192.168.176.202:5433/payment
+#    url: jdbc:postgresql://localhost:5433/payment
+    url: jdbc:postgresql://db.test.uinar.ac.id:5433/payment
     username: postgres
-    #    password: uinpwd
-    password: password
+    password: uinpwd
+#    password: password
   application:
     name: payment-service
 #  jpa:

@@ -34,7 +34,7 @@ class SecurityConfiguration(
             .csrf{ it.disable() }
             .authorizeHttpRequests {
                 it
-                    .requestMatchers("/auth", "/auth/refresh", "/error")
+                    .requestMatchers("/auth", "/auth/refresh", "/error", "/v3/**", "/swagger-ui/**")
                     .permitAll()
                     .requestMatchers("/consumers**").hasRole("ADMIN")
                     .requestMatchers("/payments**").hasAnyRole("ADMIN", "BANK")
